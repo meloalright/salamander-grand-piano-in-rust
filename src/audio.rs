@@ -109,6 +109,13 @@ impl AudioEngine {
 
         Ok(())
     }
+
+    /// Returns the number of currently active (non-empty) voices.
+    pub fn active_voice_count(&self) -> usize {
+        let mut voices = self.voices.borrow_mut();
+        voices.retain(|v| !v.empty());
+        voices.len()
+    }
 }
 
 fn semitone_ratio(offset: i32) -> f32 {

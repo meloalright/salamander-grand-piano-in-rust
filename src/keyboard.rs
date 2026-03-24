@@ -3,13 +3,13 @@ use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 use crate::config::NoteConfig;
 
 pub enum InputAction {
-    Play(NoteConfig),
+    Play(usize, NoteConfig),
     Quit,
     None,
 }
 
 pub fn poll_action(notes: &[NoteConfig]) -> Result<InputAction, String> {
-    if !event::poll(std::time::Duration::from_millis(10))
+    if !event::poll(std::time::Duration::from_millis(33))
         .map_err(|err| format!("failed to poll terminal events: {err}"))?
     {
         return Ok(InputAction::None);
@@ -29,9 +29,9 @@ pub fn poll_action(notes: &[NoteConfig]) -> Result<InputAction, String> {
         KeyCode::Char(ch) => {
             let lowered = ch.to_ascii_lowercase();
             let normalized = KeyCode::Char(lowered);
-            for note in notes {
+            for (i, note) in notes.iter().enumerate() {
                 if note.key == normalized {
-                    return Ok(InputAction::Play(*note));
+                    return Ok(InputAction::Play(i, *note));
                 }
             }
             Ok(InputAction::None)
