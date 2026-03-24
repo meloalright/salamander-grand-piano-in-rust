@@ -48,9 +48,30 @@ fn run() -> Result<(), String> {
 fn print_instructions(samples_dir: &Path) {
     println!("Terminal Piano");
     println!("Samples: {}", samples_dir.display());
-    println!("Octave 1: A S D F G H J   -> Do Re Mi Fa So La Xi");
-    println!("Octave 2: Q W E R T Y U   -> Do Re Mi Fa So La Xi");
+
+    let notes = APP_CONFIG.notes;
+    let mid = notes.len() / 2;
+    let (octave1, octave2) = notes.split_at(mid);
+
+    println!("Octave 1: {}",  format_note_row(octave1));
+    println!("Octave 2: {}",  format_note_row(octave2));
     println!("Press Esc to quit.\n");
+}
+
+fn format_note_row(notes: &[config::NoteConfig]) -> String {
+    let keys: Vec<String> = notes.iter().map(|n| key_label(n.key)).collect();
+    let names: Vec<&str> = notes.iter().map(|n| {
+        // Extract the solfege name (everything before the space and parenthesized note)
+        n.display.split_once(' ').map_or(n.display, |(name, _)| name)
+    }).collect();
+    format!("{}   -> {}", keys.join(" "), names.join(" "))
+}
+
+fn key_label(code: crossterm::event::KeyCode) -> String {
+    match code {
+        crossterm::event::KeyCode::Char(c) => c.to_ascii_uppercase().to_string(),
+        _ => "?".to_string(),
+    }
 }
 
 fn resolve_samples_dir() -> PathBuf {
